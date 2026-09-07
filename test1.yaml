@@ -1,0 +1,9 @@
+limit: 1000 
+memory_size: 0x1000 
+memory_mapped_io: 
+ 0x80: [3] 
+ 0x84: [] 
+reports: 
+ - name: "Fibonacci(3) = 2" 
+ slice: last 
+ view: "output: {io:0x84:hex}"
