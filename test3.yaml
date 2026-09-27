@@ -1,0 +1,20 @@
+limit: 10000
+memory_size: 0x2000
+memory_mapped_io:
+  0x80: [97, 42, 99, 10, 97, 98, 99, 10] # a*c\nabc\n
+  0x84: []
+reports:
+  - name: step-by-step
+    slice: all
+    view: |
+      {pc}: {D0:hex} {D1:hex} {D7:dec} {A7:hex} {instruction:next} {pc:label}
+  - name: result
+    slice: last
+    view: |
+      numio[0x80]: {io:0x80:dec}
+      numio[0x84]: {io:0x84:dec}
+    assert: |
+      numio[0x80]: [] >>> []
+      numio[0x84]: [] >>> [1]
+
+

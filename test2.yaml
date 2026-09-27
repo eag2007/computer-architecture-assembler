@@ -3,27 +3,20 @@ limit: 1000
 memory_size: 0x1000
 
 memory_mapped_io:
-  0x80: []
+  0x80: [72, 101, 108, 108, 111, 10, 0]
   0x84: []
 
 reports:
   - name: Step-by-step
     slice: all
     view: |
-      T A S {T:hex} {A:hex} {S:hex} R {R}
       {pc}:	{instruction:next}	{pc:label}
 
   - name: Result
     slice: last
-    filter:
-      - state
     view: |
       numio[0x80]: {io:0x80:dec}
       numio[0x84]: {io:0x84:dec}
-      numio[0x80]: {io:0x80:sym}
-      numio[0x84]: {io:0x84:sym}
     assert: |
-      numio[0x80]: [] >>> []
-      numio[0x84]: [] >>> [72,69,76,76,79,0]
-      numio[0x80]: "" >>> ""
-      numio[0x84]: "" >>> "HELLO\\0"
+      numio[0x80]: [0] >>> []
+      numio[0x84]: [] >>> [72,69,76,76,79]

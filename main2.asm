@@ -1,81 +1,72 @@
 .data
     .org 0x0
-    buffer1:    .word 0x5f5f5f5f
-    buffer2:    .word 0x5f5f5f5f
-    buffer3:    .word 0x5f5f5f5f
-    buffer4:    .word 0x5f5f5f5f
-    buffer5:    .word 0x5f5f5f5f
-    buffer6:    .word 0x5f5f5f5f
-    buffer7:    .word 0x5f5f5f5f
-    buffer8:    .word 0x5f5f5f5f
+    buffer1:    .word   0x5f5f5f5f
+    buffer2:    .word   0x5f5f5f5f
+    buffer3:    .word   0x5f5f5f5f
+    buffer4:    .word   0x5f5f5f5f
+    buffer5:    .word   0x5f5f5f5f
+    buffer6:    .word   0x5f5f5f5f
+    buffer7:    .word   0x5f5f5f5f
+    buffer8:    .word   0x5f5f5f5f
 
+    input_adr:  .word   0x80
+    output_adr: .word   0x84
+
+    end_symbol: .word   0x0a
+    lower_edge: .word   0x60
+    upper_edge: .word   0x7b
+    delta:      .word   0x20
+    mask_and:   .word   0xffffff00
+    mask_out:   .word   0x000000ff
+    over_out:   .word   0xcccccccc
 
 .text
-    .org 0x100
+    .org 0x200
 
 _start:
-    \ a = 0 переменная указывающая на ссылки
-    0
+    lit 0x0
     a!
-
     loop ;
 
-
 loop:
-    \ загрузка значения символа 0x80
-    @p 0x80
-
+    read_char
     dup
 
-    \ проверка на \n
-    0x0a
+    @p end_symbol
     inv
     1
     +
     +
-
     if stop_symbol
 
 
-    dup
-
-    \ проверка на overflow
     a
     31
     inv
     1
+    +   
     +
-    +
-
-    if overflow
-
+    if stop_overflow
 
     dup
 
-    \ проверка на < 0x61
     inv
     1
     +
-    0x60
+    @p lower_edge
     +
-
     -if success_char
-
 
     dup
 
-    \ проверка на > 0x7a
-    0x7b
+    @p upper_edge
     inv
     1
     +
     +
+    -if success_char 
 
-    -if success_char
-
-
-    \ из lower case в upper case
-    0x20
+    @p delta
     inv
     1
     +
@@ -83,72 +74,63 @@ loop:
 
     success_char ;
 
-\ отсеиваем символ (младшие 8 бит)
-success_char:
-    @
 
-    0xffffff00
-    and
+read_char:
+    @p input_adr
+    b!
+    @b
+    ;
 
-    xor
-
-    !+
-
-    loop ;
-
-
-\ запись стоп символа в буфер
 stop_symbol:
-    \ убираем \n
     drop
 
-    \ записываем 0 в конец строки
     0
-    \ кладем с стек
     @
+    @p mask_and
+    and
+    xor
+    !+
 
-    0xffffff00
+    0
+    a!
+    output ;
+
+stop_overflow:
+    drop
+
+    @p over_out
+    @p output_adr
+    b!
+    !b
+    halt
+
+success_char:
+    store_char
+    loop ;
+
+store_char:
+    @
+    @p mask_and
     and
 
     xor
-
     !+
+    ;
 
-    \ возвращаемся в начало буфера
-    0
-    a!
-
-    output ;
-
-\ вывод буфера
 output:
     @+
-
-    0xff
+    @p mask_out
     and
 
     dup
-
     if end
 
-    \ выводим символ
-    !p 0x84
+    @p output_adr
+    b!
 
+    !b
     output ;
 
-\ завершение
 end:
     drop
-
-    halt
-
-\ обработка overflow
-overflow:
-    \ убираем символ со стека
-    drop
-
-    0xCCCCCCCC
-
-    !p 0x84
-
     halt
