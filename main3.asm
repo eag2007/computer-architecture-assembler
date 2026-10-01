@@ -1,28 +1,17 @@
+; функция glob_match m68k
+
 .data
     .org 0x100
-    pattern1:        .word   0x5f5f5f5f
-    pattern2:        .word   0x5f5f5f5f
-    pattern3:        .word   0x5f5f5f5f
-    pattern4:        .word   0x5f5f5f5f
-    pattern5:        .word   0x5f5f5f5f
-    pattern6:        .word   0x5f5f5f5f
-    pattern7:        .word   0x5f5f5f5f
-    pattern8:        .word   0x5f5f5f5f
-    text1:           .word   0x5f5f5f5f
-    text2:           .word   0x5f5f5f5f
-    text3:           .word   0x5f5f5f5f
-    text4:           .word   0x5f5f5f5f
-    text5:           .word   0x5f5f5f5f
-    text6:           .word   0x5f5f5f5f
-    text7:           .word   0x5f5f5f5f
-    text8:           .word   0x5f5f5f5f
+    
+    pattern:         .byte   '--------------------------------'
+    text:            .byte   '--------------------------------'
 
     input_adr:       .word   0x80
     output_adr:      .word   0x84
     index_pattern:   .word   0x0
     index_text:      .word   0x0      
-    star:            .byte   0x2a
-    question:        .byte   0x3f
+    star:            .byte   '*'
+    question:        .byte   '?'
 
 .text
     .org 0x200
@@ -48,7 +37,7 @@ _start:
     ; начинается маска
     move.l 0x100, D0
     move.l 0x120, D1
-    
+
     jsr match
 
     movea.l output_adr, A3
@@ -122,6 +111,7 @@ match_star:
     move.l D1, -8(A6)
 
     add.l 1, D0
+
     jsr match
 
     move.l -4(A6), D0
@@ -143,7 +133,6 @@ match_star:
     add.l 1, D1
     jsr match
     rts
-
 
 text_is_empty:
     jmp match_false
@@ -177,6 +166,6 @@ overflow:
     movea.l (A3), A3
     move.l 0xcccccccc, (A3)
     jmp hlt
-    
+
 hlt:
     halt

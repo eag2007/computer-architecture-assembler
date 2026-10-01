@@ -1,3 +1,5 @@
+; функция upper_case_cstr f32
+
 .data
     .org 0x0
     buffer1:    .word   0x5f5f5f5f
