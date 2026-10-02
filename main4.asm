@@ -1,90 +1,112 @@
-; функция big_to_little_endian risc-iv-32
+; функция big_to_little_endian risc-v-32
 
-; s1 - адрес result
-; s3 - адрес input_adr
-; s4 - адрес output_adr
-
-; t1 - наше число на вход
-; t2 - регистр для масок
-; t3 - регистр адресов масок
+; sp - адрес вершины стека
+; ra - адрес возврата из функции
+; a0 - число на вход, затем младший байт, в конце результат
+; t0 - регистр адресов result, input_adr, output_adr
+; t2 - значение маски
+; t3 - адрес маски
+; s0 - оставшаяся часть исходного числа
+; s1 - собираемый результат
+; s2 - количество оставшихся байтов
 
 .data
     .org 0x100
-    mask1:      .word   0x000000FF
-    mask2:      .word   0x0000FF00
-    mask3:      .word   0x00FF0000
-    mask4:      .word   0xFF000000
-    result:     .word   0x00000000
+    mask:       .word 0x000000FF
+    result:     .word 0x00000000
 
-    input_adr:  .word   0x80
-    output_adr: .word   0x84
+    input_adr:  .word 0x80
+    output_adr: .word 0x84
 
 .text
     .org 0x200
 
 _start:
-    ; адрес result сохраним в s1
-    lui s1, %hi(result)
-    addi s1, s1, %lo(result)
+    lui sp, %hi(0x1000)
+    addi sp, sp, %lo(0x1000)
 
-    ; адрес input_adr сохраним в s3
-    lui s3, %hi(input_adr)
-    addi s3, s3, %lo(input_adr)
+    ; адрес input_adr сохраним в t0
+    lui t0, %hi(input_adr)
+    addi t0, t0, %lo(input_adr)
 
-    ; адрес output_adr сохраним в s4
-    lui s4, %hi(output_adr)
-    addi s4, s4, %lo(output_adr)
+    ; считаем адрес 0x80, затем число по этому адресу
+    lw t0, 0(t0)
+    lw a0, 0(t0)
 
-    ; считаем данные из 0x80 (input_adr) и сохраним в регистр t1
-    lw t1, 0(s3)
-    lw t1, 0(t1)
+    ; вызов процедуры перестановки байтов
+    jal ra, reverse_bytes
 
-    ; кладем адрес маски
-    lui t3, %hi(mask1)
-    addi t3, t3, %lo(mask1)
+    ; адрес result сохраним в t0
+    lui t0, %hi(result)
+    addi t0, t0, %lo(result)
 
-    ; первые 8 бит
-    lw t2, 0(t3)
-    and t2, t1, t2
-    slli t2, t2, 24
-    sw t2, 0(s1)
+    ; сохраним результат
+    sw a0, 0(t0)
 
-    ; вторые 8 бит
-    lui t3, %hi(mask2)
-    addi t3, t3, %lo(mask2)
+    ; адрес output_adr сохраним в t0
+    lui t0, %hi(output_adr)
+    addi t0, t0, %lo(output_adr)
 
-    lw t2, 0(t3)
-    and t2, t1, t2
-    slli t2, t2, 8
-    lw t3, 0(s1)
-    add t2, t3, t2
-    sw t2, 0(s1)
-
-    ; третьи 8 бит
-    lui t3, %hi(mask3)
-    addi t3, t3, %lo(mask3)
-
-    lw t2, 0(t3)
-    and t2, t1, t2
-    srli t2, t2, 8
-    lw t3, 0(s1)
-    add t2, t3, t2
-    sw t2, 0(s1)
-
-    ; четвёртые 8 бит
-    lui t3, %hi(mask4)
-    addi t3, t3, %lo(mask4)
-
-    lw t2, 0(t3)
-    and t2, t1, t2
-    srli t2, t2, 24
-    lw t3, 0(s1)
-    add t2, t3, t2
-    sw t2, 0(s1)
-
-    ; сохранение в 0x84 (output_adr)
-    lw t2, 0(s1)
-    lw s4, 0(s4)
-    sw t2, 0(s4)
+    ; сохранение в 0x84
+    lw t0, 0(t0)
+    sw a0, 0(t0)
 
     halt
+
+
+; аргумент и результат в a0
+reverse_bytes:
+    ; выделим в стеке место для четырёх регистров
+    addi sp, sp, -16
+
+    ; сохраним адрес возврата и прежние значения регистров
+    sw ra, 12(sp)
+    sw s0, 8(sp)
+    sw s1, 4(sp)
+    sw s2, 0(sp)
+
+    ; исходное число сохраним в s0
+    addi s0, a0, 0
+
+    ; обнулим результат
+    addi s1, zero, 0
+
+    ; обработать нужно четыре байта
+    addi s2, zero, 4
+
+reverse_loop:
+    ; передадим оставшуюся часть числа в get_byte
+    addi a0, s0, 0
+    jal ra, get_byte
+
+    ; сдвинем результат на восемь бит влево, добавим полученный байт, ; уберём обработанный байт из исходного числа
+    slli s1, s1, 8
+    or s1, s1, a0
+    srli s0, s0, 8
+
+    ; уменьшим количество оставшихся байтов, результат сохраним в a0
+    addi s2, s2, -1
+    bne s2, zero, reverse_loop
+    addi a0, s1, 0
+
+    ; восстановим прежние значения регистров и адрес возврата
+    lw s2, 0(sp)
+    lw s1, 4(sp)
+    lw s0, 8(sp)
+    lw ra, 12(sp)
+
+    ; jосвобождение выделенного места
+    addi sp, sp, 16
+    jr ra
+
+
+; аргумент и результат в a0
+get_byte:
+    ; адрес маски сохраним в t3
+    lui t3, %hi(mask)
+    addi t3, t3, %lo(mask)
+
+    ; считаем маску в t2, оставим младшие восемь бит, вернемся в reverse_bytes
+    lw t2, 0(t3)
+    and a0, a0, t2
+    jr ra
