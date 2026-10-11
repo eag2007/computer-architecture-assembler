@@ -17,10 +17,14 @@
 | [`m68k.asm`](./solutions/m68k.asm) | m68k | Сопоставление строки с шаблоном: `*` соответствует последовательности символов, `?` — одному символу |
 | [`risc-iv.asm`](./solutions/risc-iv.asm) | RISC-V 32 | Перестановка байтов 32-битного числа из big-endian в little-endian |
 
+
+[`schema.png`](./solutions/schema.png) - схема risc-iv 32 neuman [microcode]
+
 ## Структура
 
 ```text
 .
+├── schema.png    # схема risc-iv 32 neuman [microcode]
 ├── acc.asm    # Фибоначчи, acc32
 ├── acc.yaml   # тест acc.asm
 ├── f32.asm    # upper_case_cstr, f32
