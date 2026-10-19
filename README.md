@@ -36,7 +36,7 @@
 ├── risc-iv.yaml   # тест risc-iv.asm
 ├── vliw.asm    # алгоритм хэширования
 └── bliw.yaml   # тест vliw.asm
-```c
+```
 
 ## Ввод и вывод
 
