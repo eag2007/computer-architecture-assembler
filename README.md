@@ -16,6 +16,7 @@
 | [`f32.asm`](./solutions/f32.asm) | f32 | Перевод строки в верхний регистр с завершением по `\n` |
 | [`m68k.asm`](./solutions/m68k.asm) | m68k | Сопоставление строки с шаблоном: `*` соответствует последовательности символов, `?` — одному символу |
 | [`risc-iv.asm`](./solutions/risc-iv.asm) | RISC-V 32 | Перестановка байтов 32-битного числа из big-endian в little-endian |
+| [`vliw.asm`](./solutions/vliw.asm) | VLIW | Алгоритм хэширования |
 
 
 [`schema.png`](./solutions/schema.png) - схема risc-iv 32 neuman [microcode]
@@ -32,8 +33,10 @@
 ├── m68k.asm    # glob_match, m68k
 ├── m68k.yaml   # тест m68k.asm
 ├── risc-iv.asm    # big_to_little_endian, RISC-V 32
-└── risc-iv.yaml   # тест risc-iv.asm
-```
+├── risc-iv.yaml   # тест risc-iv.asm
+├── vliw.asm    # алгоритм хэширования
+└── bliw.yaml   # тест vliw.asm
+```c
 
 ## Ввод и вывод
 
