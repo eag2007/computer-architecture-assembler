@@ -35,7 +35,7 @@
 ├── risc-iv.asm    # big_to_little_endian, RISC-V 32
 ├── risc-iv.yaml   # тест risc-iv.asm
 ├── vliw.asm    # алгоритм хэширования
-└── bliw.yaml   # тест vliw.asm
+└── vliw.yaml   # тест vliw.asm
 ```
 
 ## Ввод и вывод
